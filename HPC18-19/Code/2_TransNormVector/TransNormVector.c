@@ -18,11 +18,14 @@ void init_array(double *x, double *A)
 	int i, j;
 
 	for (i = 0; i < NX; i++) {
-		x[i] = i * M_PI;
+	// x[i] = i * M_PI; <-- ΝΧ επαναλήψεις - Λάθος
 		for (j = 0; j < NY; j++) {
 			A[i*NY + j] = ((double) i*(j)) / NX;
 		}
 	}
+		for (j = 0; j < NY; j++) {
+			x[i] = i * M_PI;
+		}
 }
 
 void trans_norm_vector(double* A, double* x, double* y, double* tmp)
