@@ -3,6 +3,15 @@
 //1** Missing bottom and right vectors.
 //Global reverse ty && tx
 
+//Mapping:
+// c11 | c12 | c13
+// c21 | c22 | c23
+// c31 | c32 | c33
+// clockwise calculation: c11 -> c12 -> c13 -> c23 -> c33 -> c32 -> c31 -> c21 -> c22 
+// 
+// 
+// 
+
 
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
@@ -36,21 +45,103 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 
 		if ((Row < HEIGHT -1) && (Col < WIDTH -1) && (Row >= 1) && (Col >= 1) ){  // 1*
 			if(tx - 1 == -1 && ty - 1 == -1){
-				B = A[tx - 1][Row * WIDTH + tx]*c11	
+			B = A[tx - 1][Row * WIDTH + tx]*c11
+			+A[ty-1][tx]*c12
+			+A[ty-1][tx+1]*c13
+			+A_per_blk[ty][tx+1]*c23
+			+A_per_blk[ty+1][tx+1]*c33
+			+A_per_blk[ty+1][tx]*c32
+			+A[ty+1][tx-1]*c31
+			+A[ty][tx-1]*c21	
+			}
+			else if(tx - 1 == -1 && ty + 1 <= WIDTH ){
+			B = A[ty-1][tx-1]*c11
+			+A[ty-1][tx]*c12
+			+A[ty-1][tx+1]*c13
+			+A_per_blk[ty][tx+1]*c23
+			+A_per_blk[ty+1][tx+1]*c33
+			+A_per_blk[ty+1][tx]*c32
+			+A_per_blk[ty+1][tx-1]*c31
+			+A_per_blk[ty][tx-1]*c21
+			+A_per_blk[ty][tx]*c22;
+			}
+			else if(tx - 1 == -1 && ty + 1 > WIDTH ){
+			B = A[ty-1][tx-1]*c11
+			+A[ty-1][tx]*c12
+			+A[ty-1][tx+1]*c13
+			+A[ty][tx+1]*c23
+			+A[ty+1][tx+1]*c33
+			+A_per_blk[ty+1][tx]*c32
+			+A_per_blk[ty+1][tx-1]*c31
+			+A_per_blk[ty][tx-1]*c21
+			+A_per_blk[ty][tx]*c22;
+			}
+			else if(tx + 1 <= HEIGHT && ty + 1 > WIDTH){
+			B = A_per_blk[ty-1][tx-1]*c11
+			+A_per_blk[ty-1][tx]*c12
+			+A[ty-1][tx+1]*c13
+			+A[ty][tx+1]*c23
+			+A[ty+1][tx+1]*c33
+			+A_per_blk[ty+1][tx]*c32
+			+A_per_blk[ty+1][tx-1]*c31
+			+A_per_blk[ty][tx-1]*c21
+			+A_per_blk[ty][tx]*c22;
+			}
+			else if(tx + 1 > HEIGHT && ty + 1 > WIDTH)){
+			B = A_per_blk[ty-1][tx-1]*c11
+			+A_per_blk[ty-1][tx]*c12
+			+A[ty-1][tx+1]*c13
+			+A[ty][tx+1]*c23
+			+A[ty+1][tx+1]*c33
+			+A[ty+1][tx]*c32
+			+A[ty+1][tx-1]*c31
+			+A_per_blk[ty][tx-1]*c21
+			+A_per_blk[ty][tx]*c22;
+			}
+			else if(tx + 1 > HEIGHT && ty + 1 <= WIDTH){
+			B = A_per_blk[ty-1][tx-1]*c11
+			+A_per_blk[ty-1][tx]*c12
+			+A_per_blk[ty-1][tx+1]*c13
+			+A_per_blk[ty][tx+1]*c23
+			+A[ty+1][tx+1]*c33
+			+A[ty+1][tx]*c32
+			+A[ty+1][tx-1]*c31
+			+A_per_blk[ty][tx-1]*c21
+			+A_per_blk[ty][tx]*c22;
+			}
+			else if(tx + 1 > HEIGHT && ty - 1 == -1){
+			B = A[ty-1][tx-1]*c11
+			+A_per_blk[ty-1][tx]*c12
+			+A_per_blk[ty-1][tx+1]*c13
+			+A_per_blk[ty][tx+1]*c23
+			+A[ty+1][tx+1]*c33
+			+A[ty+1][tx]*c32
+			+A[ty+1][tx-1]*c31
+			+A[ty][tx-1]*c21
+			+A[ty][tx]*c22;
+			}
+			else if(tx + 1 <= HEIGHT && ty - 1 == -1){
+			B = A[ty-1][tx-1]*c11
+			+A_per_blk[ty-1][tx]*c12
+			+A_per_blk[ty-1][tx+1]*c13
+			+A_per_blk[ty][tx+1]*c23
+			+A_per_blk[ty+1][tx+1]*c33
+			+A_per_blk[ty+1][tx]*c32
+			+A[ty+1][tx-1]*c31
+			+A[ty][tx-1]*c21
+			+A_per_blk[ty][tx]*c22;
 			}	
 			else{
-				
+			B = A_per_blk[ty-1][tx-1]*c11
+			+A_per_blk[ty-1][tx]*c12
+			+A_per_blk[ty-1][tx+1]*c13
+			+A_per_blk[ty][tx+1]*c23
+			+A_per_blk[ty+1][tx+1]*c33
+			+A_per_blk[ty+1][tx]*c32
+			+A_per_blk[ty+1][tx-1]*c31
+			+A_per_blk[ty][tx-1]*c21
+			+A_per_blk[ty][tx]*c22;
 			}
-			B = A_per_blk[tx - 1][ty - 1]*c11
-			+A_per_blk[tx][ty - 1]*c12
-			+A_per_blk[tx + 1][ty - 1]*c13
-			+A_per_blk[tx + 1][ty]*c23
-			+A_per_blk[tx + 1][ty + 1]*c33
-			+A_per_blk[tx][ty + 1]*c32
-			+A_per_blk[tx - 1][ty + 1]*c31
-			+A_per_blk[tx - 1][ty]*c21
-			+A_per_blk[tx][ty]*c22;
-
 			//Code to be executed
 		}
 
