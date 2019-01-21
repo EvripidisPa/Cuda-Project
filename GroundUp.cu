@@ -1,5 +1,5 @@
 //TO-DO
-//1*  Finish checking the boundaries of the blocks to ignore computations out of bounds. DONE(for the leftmsot and top)
+//1*  Finish checking the boundaries of the blocks to ignore computations out of bounds. DONE(for the leftmost and top)
 //1** Missing bottom and right vectors.
 //Global reverse ty && tx
 
@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define BLOCK_SIZE_PER_DIM 16		/*Maybe just TILE_WIDTH 16 and use just that? Though I do want a 3v3 at a time.*/
+#define BLOCK_SIZE_PER_DIM 16		
 #define NUM_OF_BLOCKS 16
 #define HEIGHT 32
 #define WIDTH  32
@@ -142,21 +142,7 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 			+A_per_blk[ty][tx-1]*c21
 			+A_per_blk[ty][tx]*c22;
 			}
-			//Code to be executed
 		}
-
-
-	/*Want to iterate the blocks until I am done with the 3x3 matrices computations.*/
-
-		/*	for (i = 1; i < tx_max - 1; ++i) {
-				for (j = 1; j < NJ - 1; ++j) {
-					B[i*NJ + j] = c11 * A[(i - 1)*NJ + (j - 1)] + c12 * A[(i + 0)*NJ + (j - 1)] + c13 * A[(i + 1)*NJ + (j - 1)]
-						+ c21 * A[(i - 1)*NJ + (j + 0)] + c22 * A[(i + 0)*NJ + (j + 0)] + c23 * A[(i + 1)*NJ + (j + 0)]
-						+ c31 * A[(i - 1)*NJ + (j + 1)] + c32 * A[(i + 0)*NJ + (j + 1)] + c33 * A[(i + 1)*NJ + (j + 1)];
-				}
-			}
-		*/
-	//}
 }
 
 void init(double* A)
