@@ -20,7 +20,6 @@
 #include <stdlib.h>
 
 #define BLOCK_SIZE_PER_DIM 16		
-#define NUM_OF_BLOCKS 16
 #define HEIGHT 32
 #define WIDTH  32
 
@@ -30,7 +29,7 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 	
 	int i, j;							
 
-	__shared__ double A_per_blk[BLOCK_SIZE_PER_DIM][BLOCK_SIZE_PER_DIM];		/*BLOCK_SIZE_PER_DIM OR TILE WIDHT?	Edw evala 17x17 everything I need for a 16x16*/
+	__shared__ double A_per_blk[BLOCK_SIZE_PER_DIM][BLOCK_SIZE_PER_DIM];		
 	__shared__ double 
 	int bx = blockIdx.x;
 	int by = blockIdx.y;
@@ -45,102 +44,102 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 
 		if ((Row < HEIGHT -1) && (Col < WIDTH -1) && (Row >= 1) && (Col >= 1) ){  // 1*
 			if(tx - 1 == -1 && ty - 1 == -1){
-			B = A[tx - 1][Row * WIDTH + tx]*c11
-			+A[ty-1][tx]*c12
-			+A[ty-1][tx+1]*c13
-			+A_per_blk[ty][tx+1]*c23
-			+A_per_blk[ty+1][tx+1]*c33
-			+A_per_blk[ty+1][tx]*c32
-			+A[ty+1][tx-1]*c31
-			+A[ty][tx-1]*c21	
+				B = A[tx - 1][Row * WIDTH + tx] * c11
+					+ A[ty - 1][tx] * c12
+					+ A[ty - 1][tx + 1] * c13
+					+ A_per_blk[ty][tx + 1] * c23
+					+ A_per_blk[ty + 1][tx + 1] * c33
+					+ A_per_blk[ty + 1][tx] * c32
+					+ A[ty + 1][tx - 1] * c31
+					+ A[ty][tx - 1] * c21;
 			}
 			else if(tx - 1 == -1 && ty + 1 <= WIDTH ){
-			B = A[ty-1][tx-1]*c11
-			+A[ty-1][tx]*c12
-			+A[ty-1][tx+1]*c13
-			+A_per_blk[ty][tx+1]*c23
-			+A_per_blk[ty+1][tx+1]*c33
-			+A_per_blk[ty+1][tx]*c32
-			+A_per_blk[ty+1][tx-1]*c31
-			+A_per_blk[ty][tx-1]*c21
-			+A_per_blk[ty][tx]*c22;
+				B = A[ty - 1][tx - 1] * c11
+					+ A[ty - 1][tx] * c12
+					+ A[ty - 1][tx + 1] * c13
+					+ A_per_blk[ty][tx + 1] * c23
+					+ A_per_blk[ty + 1][tx + 1] * c33
+					+ A_per_blk[ty + 1][tx] * c32
+					+ A_per_blk[ty + 1][tx - 1] * c31
+					+ A_per_blk[ty][tx - 1] * c21
+					+ A_per_blk[ty][tx] * c22;
 			}
 			else if(tx - 1 == -1 && ty + 1 > WIDTH ){
-			B = A[ty-1][tx-1]*c11
-			+A[ty-1][tx]*c12
-			+A[ty-1][tx+1]*c13
-			+A[ty][tx+1]*c23
-			+A[ty+1][tx+1]*c33
-			+A_per_blk[ty+1][tx]*c32
-			+A_per_blk[ty+1][tx-1]*c31
-			+A_per_blk[ty][tx-1]*c21
-			+A_per_blk[ty][tx]*c22;
+				B = A[ty - 1][tx - 1] * c11
+					+ A[ty - 1][tx] * c12
+					+ A[ty - 1][tx + 1] * c13
+					+ A[ty][tx + 1] * c23
+					+ A[ty + 1][tx + 1] * c33
+					+ A_per_blk[ty + 1][tx] * c32
+					+ A_per_blk[ty + 1][tx - 1] * c31
+					+ A_per_blk[ty][tx - 1] * c21
+					+ A_per_blk[ty][tx] * c22;
 			}
 			else if(tx + 1 <= HEIGHT && ty + 1 > WIDTH){
-			B = A_per_blk[ty-1][tx-1]*c11
-			+A_per_blk[ty-1][tx]*c12
-			+A[ty-1][tx+1]*c13
-			+A[ty][tx+1]*c23
-			+A[ty+1][tx+1]*c33
-			+A_per_blk[ty+1][tx]*c32
-			+A_per_blk[ty+1][tx-1]*c31
-			+A_per_blk[ty][tx-1]*c21
-			+A_per_blk[ty][tx]*c22;
+				B = A_per_blk[ty - 1][tx - 1] * c11
+					+ A_per_blk[ty - 1][tx] * c12
+					+ A[ty - 1][tx + 1] * c13
+					+ A[ty][tx + 1] * c23
+					+ A[ty + 1][tx + 1] * c33
+					+ A_per_blk[ty + 1][tx] * c32
+					+ A_per_blk[ty + 1][tx - 1] * c31
+					+ A_per_blk[ty][tx - 1] * c21
+					+ A_per_blk[ty][tx] * c22;
 			}
 			else if(tx + 1 > HEIGHT && ty + 1 > WIDTH)){
-			B = A_per_blk[ty-1][tx-1]*c11
-			+A_per_blk[ty-1][tx]*c12
-			+A[ty-1][tx+1]*c13
-			+A[ty][tx+1]*c23
-			+A[ty+1][tx+1]*c33
-			+A[ty+1][tx]*c32
-			+A[ty+1][tx-1]*c31
-			+A_per_blk[ty][tx-1]*c21
-			+A_per_blk[ty][tx]*c22;
+			B = A_per_blk[ty - 1][tx - 1] * c11
+				+ A_per_blk[ty - 1][tx] * c12
+				+ A[ty - 1][tx + 1] * c13
+				+ A[ty][tx + 1] * c23
+				+ A[ty + 1][tx + 1] * c33
+				+ A[ty + 1][tx] * c32
+				+ A[ty + 1][tx - 1] * c31
+				+ A_per_blk[ty][tx - 1] * c21
+				+ A_per_blk[ty][tx] * c22;
 			}
 			else if(tx + 1 > HEIGHT && ty + 1 <= WIDTH){
-			B = A_per_blk[ty-1][tx-1]*c11
-			+A_per_blk[ty-1][tx]*c12
-			+A_per_blk[ty-1][tx+1]*c13
-			+A_per_blk[ty][tx+1]*c23
-			+A[ty+1][tx+1]*c33
-			+A[ty+1][tx]*c32
-			+A[ty+1][tx-1]*c31
-			+A_per_blk[ty][tx-1]*c21
-			+A_per_blk[ty][tx]*c22;
+				B = A_per_blk[ty - 1][tx - 1] * c11
+					+ A_per_blk[ty - 1][tx] * c12
+					+ A_per_blk[ty - 1][tx + 1] * c13
+					+ A_per_blk[ty][tx + 1] * c23
+					+ A[ty + 1][tx + 1] * c33
+					+ A[ty + 1][tx] * c32
+					+ A[ty + 1][tx - 1] * c31
+					+ A_per_blk[ty][tx - 1] * c21
+					+ A_per_blk[ty][tx] * c22;
 			}
 			else if(tx + 1 > HEIGHT && ty - 1 == -1){
-			B = A[ty-1][tx-1]*c11
-			+A_per_blk[ty-1][tx]*c12
-			+A_per_blk[ty-1][tx+1]*c13
-			+A_per_blk[ty][tx+1]*c23
-			+A[ty+1][tx+1]*c33
-			+A[ty+1][tx]*c32
-			+A[ty+1][tx-1]*c31
-			+A[ty][tx-1]*c21
-			+A[ty][tx]*c22;
+				B = A[ty - 1][tx - 1] * c11
+					+ A_per_blk[ty - 1][tx] * c12
+					+ A_per_blk[ty - 1][tx + 1] * c13
+					+ A_per_blk[ty][tx + 1] * c23
+					+ A[ty + 1][tx + 1] * c33
+					+ A[ty + 1][tx] * c32
+					+ A[ty + 1][tx - 1] * c31
+					+ A[ty][tx - 1] * c21
+					+ A[ty][tx] * c22;
 			}
 			else if(tx + 1 <= HEIGHT && ty - 1 == -1){
-			B = A[ty-1][tx-1]*c11
-			+A_per_blk[ty-1][tx]*c12
-			+A_per_blk[ty-1][tx+1]*c13
-			+A_per_blk[ty][tx+1]*c23
-			+A_per_blk[ty+1][tx+1]*c33
-			+A_per_blk[ty+1][tx]*c32
-			+A[ty+1][tx-1]*c31
-			+A[ty][tx-1]*c21
-			+A_per_blk[ty][tx]*c22;
+				B = A[ty - 1][tx - 1] * c11
+					+ A_per_blk[ty - 1][tx] * c12
+					+ A_per_blk[ty - 1][tx + 1] * c13
+					+ A_per_blk[ty][tx + 1] * c23
+					+ A_per_blk[ty + 1][tx + 1] * c33
+					+ A_per_blk[ty + 1][tx] * c32
+					+ A[ty + 1][tx - 1] * c31
+					+ A[ty][tx - 1] * c21
+					+ A_per_blk[ty][tx] * c22;
 			}	
 			else{
-			B = A_per_blk[ty-1][tx-1]*c11
-			+A_per_blk[ty-1][tx]*c12
-			+A_per_blk[ty-1][tx+1]*c13
-			+A_per_blk[ty][tx+1]*c23
-			+A_per_blk[ty+1][tx+1]*c33
-			+A_per_blk[ty+1][tx]*c32
-			+A_per_blk[ty+1][tx-1]*c31
-			+A_per_blk[ty][tx-1]*c21
-			+A_per_blk[ty][tx]*c22;
+				B = A_per_blk[ty - 1][tx - 1] * c11
+					+ A_per_blk[ty - 1][tx] * c12
+					+ A_per_blk[ty - 1][tx + 1] * c13
+					+ A_per_blk[ty][tx + 1] * c23
+					+ A_per_blk[ty + 1][tx + 1] * c33
+					+ A_per_blk[ty + 1][tx] * c32
+					+ A_per_blk[ty + 1][tx - 1] * c31
+					+ A_per_blk[ty][tx - 1] * c21
+					+ A_per_blk[ty][tx] * c22;
 			}
 		}
 }
@@ -199,7 +198,7 @@ int main(int argc, char* argv[]) {
 
 	dim3 num_of_Blocks(n_Blocks_X, n_Blocks_Y, 1);
 
-	size_t bytes_per_block = 16 * 16 * 64 / 8;						/*Because we will need a 17x17 matrix of information * 64bit each (cause its a double) / by 8 (bytes)*/
+	size_t bytes_per_block = 16 * 16 * 64 / 8;	
 
 	cudaError_t cuda_status = cudaMalloc((void **)&d_A, size);
 	if (cuda_status != cudaSuccess) {
