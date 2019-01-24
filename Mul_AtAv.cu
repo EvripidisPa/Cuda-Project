@@ -1,4 +1,10 @@
-﻿#include <stdio.h>
+﻿/*TO DO 
+	No major issues , the code could be optimised a little bit more. Specifically in the init of the array section.
+	1** Remove the debugging printf commands.
+	
+	*/
+
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <cuda.h>
@@ -10,8 +16,8 @@
 
 /*Problem size*/
 
-#define HEIGHT 1024                                 //  number  of rows of a
-#define WIDTH  1024                               //  number  of  columns  of a
+#define HEIGHT 4                                 //  number  of rows of a
+#define WIDTH  3								 //  number  of  columns  of a
 
 #ifndef M_PI
 #define M_PI 3.14159
@@ -21,11 +27,11 @@ void init_array(double *x, double *y, double *A)
 {
 	int i, j;
 
-	for (i = 0; i < WIDTH; i++) x[i] = i * M_PI;								// x={}^T
+	for (i = 0; i < WIDTH; i++) x[i] = i * M_PI;						// x={i * M_PI;}^T
 	for (i = 0; i < HEIGHT; i++) y[i] = 0.0f;							// y={0...0}^T
 
 
-	for (i = 0; i < HEIGHT; i++) {										// x[i] = i * M_PI; lets test 1 first so that cuBlas is working.
+	for (i = 0; i < HEIGHT; i++) {										
 		for (j = 0; j < WIDTH; j++) {
 			A[IDX2C(i, j, HEIGHT)] = ((double)i*(j)) / HEIGHT;
 		}
@@ -175,3 +181,4 @@ Error:
 
 	return 0;
 }
+	
