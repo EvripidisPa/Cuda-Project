@@ -44,7 +44,7 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 
 		if ((Row < HEIGHT -1) && (Col < WIDTH -1) && (Row >= 1) && (Col >= 1) ){  // 1*
 			if(tx - 1 == -1 && ty - 1 == -1){
-				B = A[tx - 1][Row * WIDTH + tx] * c11
+				B[Row * WIDTH + tx] = A[tx - 1][Row * WIDTH + tx] * c11
 					+ A[ty - 1][tx] * c12
 					+ A[ty - 1][tx + 1] * c13
 					+ A_per_blk[ty][tx + 1] * c23
@@ -54,7 +54,7 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 					+ A[ty][tx - 1] * c21;
 			}
 			else if(tx - 1 == -1 && ty + 1 <= WIDTH ){
-				B = A[ty - 1][tx - 1] * c11
+				B[Row * WIDTH + tx] = A[ty - 1][tx - 1] * c11
 					+ A[ty - 1][tx] * c12
 					+ A[ty - 1][tx + 1] * c13
 					+ A_per_blk[ty][tx + 1] * c23
@@ -65,7 +65,7 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 					+ A_per_blk[ty][tx] * c22;
 			}
 			else if(tx - 1 == -1 && ty + 1 > WIDTH ){
-				B = A[ty - 1][tx - 1] * c11
+				B[Row * WIDTH + tx] = A[ty - 1][tx - 1] * c11
 					+ A[ty - 1][tx] * c12
 					+ A[ty - 1][tx + 1] * c13
 					+ A[ty][tx + 1] * c23
@@ -76,7 +76,7 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 					+ A_per_blk[ty][tx] * c22;
 			}
 			else if(tx + 1 <= HEIGHT && ty + 1 > WIDTH){
-				B = A_per_blk[ty - 1][tx - 1] * c11
+				B[Row * WIDTH + tx] = A_per_blk[ty - 1][tx - 1] * c11
 					+ A_per_blk[ty - 1][tx] * c12
 					+ A[ty - 1][tx + 1] * c13
 					+ A[ty][tx + 1] * c23
@@ -87,7 +87,7 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 					+ A_per_blk[ty][tx] * c22;
 			}
 			else if(tx + 1 > HEIGHT && ty + 1 > WIDTH)){
-			B = A_per_blk[ty - 1][tx - 1] * c11
+			B[Row * WIDTH + tx] = A_per_blk[ty - 1][tx - 1] * c11
 				+ A_per_blk[ty - 1][tx] * c12
 				+ A[ty - 1][tx + 1] * c13
 				+ A[ty][tx + 1] * c23
@@ -98,7 +98,7 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 				+ A_per_blk[ty][tx] * c22;
 			}
 			else if(tx + 1 > HEIGHT && ty + 1 <= WIDTH){
-				B = A_per_blk[ty - 1][tx - 1] * c11
+				B[Row * WIDTH + tx] = A_per_blk[ty - 1][tx - 1] * c11
 					+ A_per_blk[ty - 1][tx] * c12
 					+ A_per_blk[ty - 1][tx + 1] * c13
 					+ A_per_blk[ty][tx + 1] * c23
@@ -109,7 +109,7 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 					+ A_per_blk[ty][tx] * c22;
 			}
 			else if(tx + 1 > HEIGHT && ty - 1 == -1){
-				B = A[ty - 1][tx - 1] * c11
+				B[Row * WIDTH + tx] = A[ty - 1][tx - 1] * c11
 					+ A_per_blk[ty - 1][tx] * c12
 					+ A_per_blk[ty - 1][tx + 1] * c13
 					+ A_per_blk[ty][tx + 1] * c23
@@ -120,7 +120,7 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 					+ A[ty][tx] * c22;
 			}
 			else if(tx + 1 <= HEIGHT && ty - 1 == -1){
-				B = A[ty - 1][tx - 1] * c11
+				B[Row * WIDTH + tx] = A[ty - 1][tx - 1] * c11
 					+ A_per_blk[ty - 1][tx] * c12
 					+ A_per_blk[ty - 1][tx + 1] * c13
 					+ A_per_blk[ty][tx + 1] * c23
@@ -131,7 +131,7 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 					+ A_per_blk[ty][tx] * c22;
 			}	
 			else{
-				B = A_per_blk[ty - 1][tx - 1] * c11
+				B[Row * WIDTH + tx] = A_per_blk[ty - 1][tx - 1] * c11
 					+ A_per_blk[ty - 1][tx] * c12
 					+ A_per_blk[ty - 1][tx + 1] * c13
 					+ A_per_blk[ty][tx + 1] * c23
