@@ -27,10 +27,8 @@ __device__ __constant__ double c11 = +0.2, c21 = +0.5, c31 = -0.8, c12 = -0.3, c
 
 __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) {
 	
-	int i, j;							
+	int i, j;			
 
-	__shared__ double A_per_blk[BLOCK_SIZE_PER_DIM][BLOCK_SIZE_PER_DIM];		
-	__shared__ double 
 	int bx = blockIdx.x;
 	int by = blockIdx.y;
 	int tx = threadIdx.x;
@@ -39,109 +37,113 @@ __global__ void convolution_with_cuda(double* A, double* B , int num_of_Blocks) 
 	int Row = by * BLOCK_SIZE_PER_DIM + ty;
 	int Col = bx * BLOCK_SIZE_PER_DIM + tx;
 
+	__shared__ double A_per_blk[BLOCK_SIZE_PER_DIM][BLOCK_SIZE_PER_DIM];
+
 		A_per_blk[ty][tx] = A[Row * WIDTH + tx];
 		__syncthreads();
 
-		if ((Row < HEIGHT -1) && (Col < WIDTH -1) && (Row >= 1) && (Col >= 1) ){  // 1*
-			if(tx - 1 == -1 && ty - 1 == -1){
-				B[Row * WIDTH + tx] = A[tx - 1][Row * WIDTH + tx] * c11
-					+ A[ty - 1][tx] * c12
-					+ A[ty - 1][tx + 1] * c13
-					+ A_per_blk[ty][tx + 1] * c23
-					+ A_per_blk[ty + 1][tx + 1] * c33
-					+ A_per_blk[ty + 1][tx] * c32
-					+ A[ty + 1][tx - 1] * c31
-					+ A[ty][tx - 1] * c21;
-			}
-			else if(tx - 1 == -1 && ty + 1 <= WIDTH ){
-				B[Row * WIDTH + tx] = A[ty - 1][tx - 1] * c11
-					+ A[ty - 1][tx] * c12
-					+ A[ty - 1][tx + 1] * c13
-					+ A_per_blk[ty][tx + 1] * c23
-					+ A_per_blk[ty + 1][tx + 1] * c33
-					+ A_per_blk[ty + 1][tx] * c32
-					+ A_per_blk[ty + 1][tx - 1] * c31
-					+ A_per_blk[ty][tx - 1] * c21
-					+ A_per_blk[ty][tx] * c22;
-			}
-			else if(tx - 1 == -1 && ty + 1 > WIDTH ){
-				B[Row * WIDTH + tx] = A[ty - 1][tx - 1] * c11
-					+ A[ty - 1][tx] * c12
-					+ A[ty - 1][tx + 1] * c13
-					+ A[ty][tx + 1] * c23
-					+ A[ty + 1][tx + 1] * c33
-					+ A_per_blk[ty + 1][tx] * c32
-					+ A_per_blk[ty + 1][tx - 1] * c31
-					+ A_per_blk[ty][tx - 1] * c21
-					+ A_per_blk[ty][tx] * c22;
-			}
-			else if(tx + 1 <= HEIGHT && ty + 1 > WIDTH){
+//		if ((Row < HEIGHT) && (Col < WIDTH)) {
+			if ((Row < HEIGHT - 1) && (Col < WIDTH - 1) && (Row >= 1) && (Col >= 1)) {  // 1*
+				if (tx - 1 == -1 && ty - 1 == -1) {
+					B[Row * WIDTH + tx] = A[tx - 1][Row * WIDTH + tx] * c11
+						+ A[ty - 1][tx] * c12
+						+ A[ty - 1][tx + 1] * c13
+						+ A_per_blk[ty][tx + 1] * c23
+						+ A_per_blk[ty + 1][tx + 1] * c33
+						+ A_per_blk[ty + 1][tx] * c32
+						+ A[ty + 1][tx - 1] * c31
+						+ A[ty][tx - 1] * c21;
+				}
+				else if (tx - 1 == -1 && ty + 1 <= WIDTH) {
+					B[Row * WIDTH + tx] = A[ty - 1][tx - 1] * c11
+						+ A[ty - 1][tx] * c12
+						+ A[ty - 1][tx + 1] * c13
+						+ A_per_blk[ty][tx + 1] * c23
+						+ A_per_blk[ty + 1][tx + 1] * c33
+						+ A_per_blk[ty + 1][tx] * c32
+						+ A_per_blk[ty + 1][tx - 1] * c31
+						+ A_per_blk[ty][tx - 1] * c21
+						+ A_per_blk[ty][tx] * c22;
+				}
+				else if (tx - 1 == -1 && ty + 1 > WIDTH) {
+					B[Row * WIDTH + tx] = A[ty - 1][tx - 1] * c11
+						+ A[ty - 1][tx] * c12
+						+ A[ty - 1][tx + 1] * c13
+						+ A[ty][tx + 1] * c23
+						+ A[ty + 1][tx + 1] * c33
+						+ A_per_blk[ty + 1][tx] * c32
+						+ A_per_blk[ty + 1][tx - 1] * c31
+						+ A_per_blk[ty][tx - 1] * c21
+						+ A_per_blk[ty][tx] * c22;
+				}
+				else if (tx + 1 <= HEIGHT && ty + 1 > WIDTH) {
+					B[Row * WIDTH + tx] = A_per_blk[ty - 1][tx - 1] * c11
+						+ A_per_blk[ty - 1][tx] * c12
+						+ A[ty - 1][tx + 1] * c13
+						+ A[ty][tx + 1] * c23
+						+ A[ty + 1][tx + 1] * c33
+						+ A_per_blk[ty + 1][tx] * c32
+						+ A_per_blk[ty + 1][tx - 1] * c31
+						+ A_per_blk[ty][tx - 1] * c21
+						+ A_per_blk[ty][tx] * c22;
+				}
+				else if (tx + 1 > HEIGHT && ty + 1 > WIDTH)){
 				B[Row * WIDTH + tx] = A_per_blk[ty - 1][tx - 1] * c11
 					+ A_per_blk[ty - 1][tx] * c12
 					+ A[ty - 1][tx + 1] * c13
 					+ A[ty][tx + 1] * c23
-					+ A[ty + 1][tx + 1] * c33
-					+ A_per_blk[ty + 1][tx] * c32
-					+ A_per_blk[ty + 1][tx - 1] * c31
-					+ A_per_blk[ty][tx - 1] * c21
-					+ A_per_blk[ty][tx] * c22;
-			}
-			else if(tx + 1 > HEIGHT && ty + 1 > WIDTH)){
-			B[Row * WIDTH + tx] = A_per_blk[ty - 1][tx - 1] * c11
-				+ A_per_blk[ty - 1][tx] * c12
-				+ A[ty - 1][tx + 1] * c13
-				+ A[ty][tx + 1] * c23
-				+ A[ty + 1][tx + 1] * c33
-				+ A[ty + 1][tx] * c32
-				+ A[ty + 1][tx - 1] * c31
-				+ A_per_blk[ty][tx - 1] * c21
-				+ A_per_blk[ty][tx] * c22;
-			}
-			else if(tx + 1 > HEIGHT && ty + 1 <= WIDTH){
-				B[Row * WIDTH + tx] = A_per_blk[ty - 1][tx - 1] * c11
-					+ A_per_blk[ty - 1][tx] * c12
-					+ A_per_blk[ty - 1][tx + 1] * c13
-					+ A_per_blk[ty][tx + 1] * c23
 					+ A[ty + 1][tx + 1] * c33
 					+ A[ty + 1][tx] * c32
 					+ A[ty + 1][tx - 1] * c31
 					+ A_per_blk[ty][tx - 1] * c21
 					+ A_per_blk[ty][tx] * c22;
 			}
-			else if(tx + 1 > HEIGHT && ty - 1 == -1){
-				B[Row * WIDTH + tx] = A[ty - 1][tx - 1] * c11
-					+ A_per_blk[ty - 1][tx] * c12
-					+ A_per_blk[ty - 1][tx + 1] * c13
-					+ A_per_blk[ty][tx + 1] * c23
-					+ A[ty + 1][tx + 1] * c33
-					+ A[ty + 1][tx] * c32
-					+ A[ty + 1][tx - 1] * c31
-					+ A[ty][tx - 1] * c21
-					+ A[ty][tx] * c22;
+				else if (tx + 1 > HEIGHT && ty + 1 <= WIDTH) {
+					B[Row * WIDTH + tx] = A_per_blk[ty - 1][tx - 1] * c11
+						+ A_per_blk[ty - 1][tx] * c12
+						+ A_per_blk[ty - 1][tx + 1] * c13
+						+ A_per_blk[ty][tx + 1] * c23
+						+ A[ty + 1][tx + 1] * c33
+						+ A[ty + 1][tx] * c32
+						+ A[ty + 1][tx - 1] * c31
+						+ A_per_blk[ty][tx - 1] * c21
+						+ A_per_blk[ty][tx] * c22;
+				}
+				else if (tx + 1 > HEIGHT && ty - 1 == -1) {
+					B[Row * WIDTH + tx] = A[ty - 1][tx - 1] * c11
+						+ A_per_blk[ty - 1][tx] * c12
+						+ A_per_blk[ty - 1][tx + 1] * c13
+						+ A_per_blk[ty][tx + 1] * c23
+						+ A[ty + 1][tx + 1] * c33
+						+ A[ty + 1][tx] * c32
+						+ A[ty + 1][tx - 1] * c31
+						+ A[ty][tx - 1] * c21
+						+ A[ty][tx] * c22;
+				}
+				else if (tx + 1 <= HEIGHT && ty - 1 == -1) {
+					B[Row * WIDTH + tx] = A[ty - 1][tx - 1] * c11
+						+ A_per_blk[ty - 1][tx] * c12
+						+ A_per_blk[ty - 1][tx + 1] * c13
+						+ A_per_blk[ty][tx + 1] * c23
+						+ A_per_blk[ty + 1][tx + 1] * c33
+						+ A_per_blk[ty + 1][tx] * c32
+						+ A[ty + 1][tx - 1] * c31
+						+ A[ty][tx - 1] * c21
+						+ A_per_blk[ty][tx] * c22;
+				}
+				else {
+					B[Row * WIDTH + tx] = A_per_blk[ty - 1][tx - 1] * c11
+						+ A_per_blk[ty - 1][tx] * c12
+						+ A_per_blk[ty - 1][tx + 1] * c13
+						+ A_per_blk[ty][tx + 1] * c23
+						+ A_per_blk[ty + 1][tx + 1] * c33
+						+ A_per_blk[ty + 1][tx] * c32
+						+ A_per_blk[ty + 1][tx - 1] * c31
+						+ A_per_blk[ty][tx - 1] * c21
+						+ A_per_blk[ty][tx] * c22;
+				}
 			}
-			else if(tx + 1 <= HEIGHT && ty - 1 == -1){
-				B[Row * WIDTH + tx] = A[ty - 1][tx - 1] * c11
-					+ A_per_blk[ty - 1][tx] * c12
-					+ A_per_blk[ty - 1][tx + 1] * c13
-					+ A_per_blk[ty][tx + 1] * c23
-					+ A_per_blk[ty + 1][tx + 1] * c33
-					+ A_per_blk[ty + 1][tx] * c32
-					+ A[ty + 1][tx - 1] * c31
-					+ A[ty][tx - 1] * c21
-					+ A_per_blk[ty][tx] * c22;
-			}	
-			else{
-				B[Row * WIDTH + tx] = A_per_blk[ty - 1][tx - 1] * c11
-					+ A_per_blk[ty - 1][tx] * c12
-					+ A_per_blk[ty - 1][tx + 1] * c13
-					+ A_per_blk[ty][tx + 1] * c23
-					+ A_per_blk[ty + 1][tx + 1] * c33
-					+ A_per_blk[ty + 1][tx] * c32
-					+ A_per_blk[ty + 1][tx - 1] * c31
-					+ A_per_blk[ty][tx - 1] * c21
-					+ A_per_blk[ty][tx] * c22;
-			}
-		}
+//		}
 }
 
 void init(double* A)
@@ -269,6 +271,8 @@ int main(int argc, char* argv[]) {
 	Error :
 	cudaFree(d_A);
 	cudaFree(d_B);
+	free(A);
+	free(B);
 	
 	return 0;
 }
